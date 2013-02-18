@@ -6,9 +6,6 @@ import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
 import akka.util.Timeout
 
-case class Print(s: String)
-case object PrintAck
-
 class InverseCalculator(dispatcher:ActorRef) extends Actor {
 
   dispatcher ! MessageDiscarder.WorkerAvailable
