@@ -1,0 +1,5 @@
+package rklaehn
+
+object MessageDiscarderTest {
+
+}
