@@ -8,7 +8,7 @@ object MessageDiscarder {
   private sealed trait State
   private case class Forwarding(to:ActorRef) extends State
   private case object Queueing extends State
-  private case class Queued(msg:Any) extends State
+  private case class Queued(msg:Any, from:ActorRef) extends State
 }
 
 class MessageDiscarder extends Actor {
@@ -20,9 +20,9 @@ class MessageDiscarder extends Actor {
     case WorkerAvailable =>
       state = state match {
         case Queueing => Forwarding(sender)
-        case Queued(msg) =>
-          // to use forward here we would have to "fake the return address"
-          sender ! msg
+        case Queued(msg, from) =>
+          // use remembered from so we're out of the loop!
+          sender.tell(msg, from)
           Queueing
         case Forwarding(old) =>
           Forwarding(sender)
@@ -31,15 +31,16 @@ class MessageDiscarder extends Actor {
     case msg =>
       state = state match {
         case Forwarding(to) =>
-          // use forward here?
-          to ! msg
+          to forward msg
           Queueing
         case Queueing =>
-          Queued(msg)
-        case Queued(old) =>
-          // send old to deadletters?
-          context.system.deadLetters ! old
-          Queued(msg)
+          // remember sender as well as message
+          Queued(msg, sender)
+        case Queued(oldMsg, oldSender) =>
+          // send oldMsg to deadletters?
+          context.system.deadLetters ! oldMsg
+          // remember sender as well as message
+          Queued(msg, sender)
       }
   }
 }
