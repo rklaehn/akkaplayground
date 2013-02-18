@@ -2,5 +2,10 @@
 /.idea
 /.idea_modules
 
+#Eclipse
+.cache
+.classpath
+.project
+
 #SBT
 target/
