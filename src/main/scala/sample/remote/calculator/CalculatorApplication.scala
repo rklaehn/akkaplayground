@@ -28,7 +28,7 @@ class CalculatorApplication extends Bootable {
   //#setup
   val system = ActorSystem("CalculatorApplication",
     ConfigFactory.load.getConfig("calculator"))
-  //val actor = system.actorOf(Props[SimpleCalculatorActor], "simpleCalculator")
+  val actor = system.actorOf(Props[SimpleCalculatorActor], "simpleCalculator")
   //#setup
 
   def startup() {
