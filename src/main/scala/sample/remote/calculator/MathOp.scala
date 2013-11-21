@@ -26,12 +26,16 @@ case class MultiplicationResult(nbr1: Int, nbr2: Int, result: Int) extends MathR
 case class DivisionResult(nbr1: Double, nbr2: Int, result: Double) extends MathResult
 
 class AdvancedCalculatorActor extends Actor {
+  println("new instance of AdvancedCalculatorActor started at " + self)
+
   def receive = {
     case Multiply(n1, n2) ⇒
       println("Calculating %d * %d".format(n1, n2))
       sender ! MultiplicationResult(n1, n2, n1 * n2)
     case Divide(n1, n2) ⇒
       println("Calculating %.0f / %d".format(n1, n2))
+      if(n2 == 0)
+        throw new ArithmeticException("You're not supposed to divide by zero!")
       sender ! DivisionResult(n1, n2, n1 / n2)
   }
 }

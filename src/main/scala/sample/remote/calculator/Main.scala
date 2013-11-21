@@ -1,7 +1,5 @@
 package sample.remote.calculator
 
-import scala.util.control.NonFatal
-
 object Main extends App {
   try {
     val choice = args(0)
@@ -11,6 +9,7 @@ object Main extends App {
       case "lookup" => sample.remote.calculator.LookupApp.main(Array.empty)
     }
   } catch {
-    case NonFatal(e) => println("calc for calculator, create for creation, lookup for lookup")
+    case e:MatchError =>
+      println("calc for calculation server, create for creating remote calculator, lookup for lookup remote calculator")
   }
 }

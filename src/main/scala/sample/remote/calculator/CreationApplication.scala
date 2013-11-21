@@ -2,6 +2,7 @@
  *  Copyright (C) 2009-2013 Typesafe Inc. <http://www.typesafe.com>
  */
 package sample.remote.calculator
+import scala.concurrent.duration._
 
 /*
  * comments like //#<tag> are there for inclusion into docs, please don’t remove
@@ -11,14 +12,13 @@ import akka.kernel.Bootable
 import com.typesafe.config.ConfigFactory
 import scala.util.Random
 import akka.actor._
+import akka.actor.SupervisorStrategy.{Escalate, Stop, Restart, Resume}
 
 class CreationApplication extends Bootable {
   //#setup
   val system =
     ActorSystem("RemoteCreation", ConfigFactory.load.getConfig("remotecreation"))
-  val remoteActor = system.actorOf(Props[AdvancedCalculatorActor],
-    name = "advancedCalculator")
-  val localActor = system.actorOf(Props(classOf[CreationActor], remoteActor),
+  val localActor = system.actorOf(Props(classOf[CreationActor]),
     name = "creationActor")
 
   def doSomething(op: MathOp): Unit =
@@ -34,7 +34,21 @@ class CreationApplication extends Bootable {
 }
 
 //#actor
-class CreationActor(remoteActor: ActorRef) extends Actor {
+class CreationActor extends Actor {
+
+  override val supervisorStrategy =
+    OneForOneStrategy(maxNrOfRetries = 10, withinTimeRange = 1.minute) {
+      case e: ArithmeticException      ⇒
+        println(s"Got $e from remote child")
+        Resume
+      case _: NullPointerException     ⇒ Restart
+      case _: IllegalArgumentException ⇒ Stop
+      case _: Exception                ⇒ Escalate
+    }
+
+  val remoteActor = context.actorOf(Props[AdvancedCalculatorActor],
+    name = "advancedCalculator")
+
   def receive = {
     case op: MathOp ⇒ remoteActor ! op
     case result: MathResult ⇒ result match {
@@ -55,7 +69,7 @@ object CreationApp {
       if (Random.nextInt(100) % 2 == 0)
         app.doSomething(Multiply(Random.nextInt(20), Random.nextInt(20)))
       else
-        app.doSomething(Divide(Random.nextInt(10000), (Random.nextInt(99) + 1)))
+        app.doSomething(Divide(Random.nextInt(10000), (Random.nextInt(10))))
 
       Thread.sleep(200)
     }
