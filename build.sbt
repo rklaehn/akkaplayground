@@ -4,6 +4,8 @@ assemblySettings
 
 name := "Akka playground"
 
+mainClass in assembly := Some("Main")
+
 version := "1.0"
 
 scalaVersion := "2.10.3"
