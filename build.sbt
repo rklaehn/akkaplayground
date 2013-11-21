@@ -2,9 +2,11 @@ import AssemblyKeys._
 
 assemblySettings
 
-name := "Akka playground"
+name := "remoteexample"
 
-mainClass in assembly := Some("Main")
+mainClass in assembly := Some("sample.remote.calculator.Main")
+
+jarName in assembly := "remoteexample.jar"
 
 version := "1.0"
 
